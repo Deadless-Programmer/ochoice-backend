@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import connectDB from './config/db.js';
-
+import connectDB from './config/db';
+import authRoutes from './routes/auth.routes';
 dotenv.config();
 
 const app = express();
@@ -11,6 +11,10 @@ app.use(express.json());
 
 // Database connect
 connectDB();
+
+console.log('✅ App started and middleware registered...');
+
+app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
   res.send('✅ oChoice API is running...');

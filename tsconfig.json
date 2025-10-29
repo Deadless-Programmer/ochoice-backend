@@ -1,25 +1,12 @@
 {
   "compilerOptions": {
-    /* Environment */
     "target": "ES2020",
     "module": "CommonJS",
-    "moduleResolution": "Node",
     "rootDir": "src",
     "outDir": "dist",
-
-    /* Interop */
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
     "strict": true,
-
-    /* Debugging */
-    "sourceMap": true,
-    "declaration": false,
-
-    /* Node type definitions */
-    "types": ["node"]
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "include": ["src"]
 }

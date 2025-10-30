@@ -2,6 +2,7 @@ import express from 'express';
 const router = express.Router();
 import { register , login, refreshToken, logout, createUser, changePassword, resetPassword, forgotPassword, resetPasswordViaToken, updateProfile} from '../controllers/auth.controller';
 import { authorizeRoles, verifyToken } from '../middleware/verifyToken';
+import { deleteUserByAdmin, getAllUsers, updateUserByAdmin } from '../controllers/admin.controller';
 
 
 console.log('✅ Auth routes file loaded');
@@ -25,6 +26,12 @@ router.post("/reset-password/:token", resetPasswordViaToken);
 
 
 router.put("/update-profile", verifyToken, updateProfile);
+
+// router.get("/all-users", verifyToken, getAllUsers);
+// router.put("/update-user/:id", verifyToken, updateUserByAdmin);
+// router.delete("/delete-user/:id", verifyToken, deleteUserByAdmin);
+
+
 
 
 export default router;

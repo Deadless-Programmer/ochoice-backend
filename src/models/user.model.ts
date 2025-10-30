@@ -8,6 +8,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: UserRole;
+  isDeleted?: boolean;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -22,6 +23,7 @@ const UserSchema: Schema<IUser> = new Schema(
       enum: ['superAdmin', 'admin', 'seller', 'customer'],
       default: 'customer',
     },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

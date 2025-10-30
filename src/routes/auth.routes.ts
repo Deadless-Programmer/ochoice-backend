@@ -1,7 +1,8 @@
 import express from 'express';
 const router = express.Router();
-import { register , login, refreshToken, logout, createUser, changePassword, resetPassword} from '../controllers/auth.controller';
+import { register , login, refreshToken, logout, createUser, changePassword, resetPassword, forgotPassword, resetPasswordViaToken} from '../controllers/auth.controller';
 import { authorizeRoles, verifyToken } from '../middleware/verifyToken';
+
 
 console.log('✅ Auth routes file loaded');
 
@@ -17,6 +18,10 @@ router.put("/change-password", verifyToken, changePassword);
 
 // SuperAdmin reset another user's password
 router.put("/reset-password", verifyToken, authorizeRoles("superAdmin"), resetPassword);
+
+
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPasswordViaToken);
 
 
 export default router;

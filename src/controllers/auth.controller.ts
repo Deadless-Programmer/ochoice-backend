@@ -3,6 +3,9 @@ import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/user.model";
 import { generateTokens } from "../utils/generateToken";
 import bcrypt from "bcryptjs";
+import { SignOptions } from "jsonwebtoken";
+
+import { sendEmail } from "../utils/sendEmail";
 
 // Register (public)
 export const register = async (req: Request, res: Response) => {
@@ -92,11 +95,9 @@ export const login = async (req: Request, res: Response) => {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch)
-      return res
-        .status(400)
-        .json({
-          message: "Invalid credentials : Please give a valid password",
-        });
+      return res.status(400).json({
+        message: "Invalid credentials : Please give a valid password",
+      });
 
     const token = generateTokens(user);
 
@@ -205,7 +206,6 @@ export const resetPassword = async (req: Request, res: Response) => {
     if (!userToReset)
       return res.status(404).json({ message: "User not found" });
 
-    
     userToReset.password = newPassword;
     await userToReset.save();
 
@@ -216,6 +216,75 @@ export const resetPassword = async (req: Request, res: Response) => {
       .json({ message: `Password reset successful for ${userToReset.email}` });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "User with this email does not exist" });
+
+    // Create Reset Token (short-lived)
+    const payload = { id: user._id };
+    const secret = process.env.JWT_RESET_PASSWORD_SECRET!;
+    const options: SignOptions = {
+      expiresIn: (process.env.JWT_RESET_PASSWORD_EXPIRES as any) || "15m",
+    };
+
+    const resetToken = jwt.sign(payload, secret, options);
+    // Reset URL
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    // Send Email
+    const message = `
+      <h3>Password Reset Request</h3>
+      <p>Hi ${user.username},</p>
+      <p>Click the link below to reset your password. Link is valid for 15 minutes.</p>
+      <a href="${resetUrl}">${resetUrl}</a>
+    `;
+
+    await sendEmail({
+      to: user.email,
+      subject: "Password Reset Request",
+      html: message,
+    });
+
+    res
+      .status(200)
+      .json({ message: `Password reset email sent to ${user.email}` });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const resetPasswordViaToken = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword)
+      return res.status(400).json({ message: "New password is required" });
+
+    // Verify token
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_RESET_PASSWORD_SECRET!
+    ) as { id: string };
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.password = newPassword; // pre-save middleware will hash it
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error: any) {
+    res.status(400).json({ message: "Invalid or expired token" });
   }
 };
 

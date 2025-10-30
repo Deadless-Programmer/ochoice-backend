@@ -288,6 +288,52 @@ export const resetPasswordViaToken = async (req: Request, res: Response) => {
   }
 };
 
+
+// =======================
+// 🧩 Update User Profile
+// =======================
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id; // token থেকে আসবে
+    const { username, email } = req.body;
+
+    // validation
+    if (!username && !email) {
+      return res.status(400).json({ message: "Please provide data to update" });
+    }
+
+    // find user
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // update fields
+    if (username) user.username = username;
+    if (email) user.email = email;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+
+
+
+
+
+
 // Logout
 export const logout = (req: Request, res: Response) => {
   res.clearCookie("refreshToken", {

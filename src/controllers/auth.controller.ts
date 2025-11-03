@@ -118,6 +118,23 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+
+// Get me
+
+ export const me = async (req:any, res:Response)=>{
+
+try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json({ user });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+
+ }
+
+
+
 // Refresh Token
 export const refreshToken = async (req: Request, res: Response) => {
   try {

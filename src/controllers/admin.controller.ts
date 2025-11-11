@@ -21,15 +21,20 @@ const canManage = (requesterRole: string, targetRole: string): boolean => {
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const requester = (req as any).user;
+
     if (requester.role !== "admin" && requester.role !== "superAdmin") {
       return res.status(403).json({ message: "Forbidden: Access denied" });
     }
 
-    // Admin cannot see SuperAdmin data, and exclude soft-deleted
-    const query: any =
-      requester.role === "admin"
-        ? { role: { $ne: "superAdmin" }, isDeleted: false }
-        : { isDeleted: false };
+    let query: any = {};
+
+    if (requester.role === "admin") {
+      // admin can’t see superAdmin & can’t see deleted users
+      query = { role: { $ne: "superAdmin" }, isDeleted: false };
+    } else if (requester.role === "superAdmin") {
+      // superAdmin can see everyone (deleted + active)
+      query = {}; // fetch all users, no filter
+    }
 
     const users = await User.find(query).select("-password");
     res.status(200).json(users);
@@ -37,6 +42,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 // ==============================

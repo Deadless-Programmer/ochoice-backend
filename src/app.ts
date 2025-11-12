@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db';
 import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
+import productRoutes from './routes/product.routes';
 import cookieParser from "cookie-parser";
 
 
@@ -25,6 +26,7 @@ console.log('✅ App started and middleware registered...');
 
 app.use('/api/auth', authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/products", productRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('✅ oChoice API is running...');

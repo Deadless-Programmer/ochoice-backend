@@ -1,47 +1,124 @@
 import { Request, Response } from "express";
-import {productService} from "../services/product.service";
-
+import { productService } from "../services/product.service";
+import { getProductsService } from "../services/product.service";
 // Create product
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const product = await productService.createProduct(req.body);
-    res.status(201).json({message: "Product create successfully",  success: true, data: product });
+    res.status(201).json({
+      message: "Product create successfully",
+      success: true,
+      data: product,
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
 // Get all products with filters
+// src/controllers/product.controller.ts
+
 export const getProducts = async (req: Request, res: Response) => {
   try {
-    const { category, size, color, brand, minPrice, maxPrice, sort } =
-      req.query;
+    const {
+      category,
+      brand,
+      size,
+      color,
+      minPrice,
+      maxPrice,
+      q,
+      sort = "newest",
+      page = "1",
+      limit = "20",
+    } = req.query;
+console.log("Raw req.query:", req.query);
+console.log("Raw color param:", color);
+    // Helper: string[] বানানোর জন্য (শুধু trim + filter)
+    const toArray = (param: any): string[] => {
+      if (!param) return [];
+      if (Array.isArray(param)) {
+        return param.map(String).map(s => s.trim()).filter(Boolean);
+      }
+      return String(param)
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+    };
 
-    const filters: any = {};
+    const filters: any = { isDeleted: false };
 
-    if (category) filters.category = category;
-    if (brand) filters.brand = brand;
-    if (color) filters.colors = { $in: [color] };
-    if (size) filters.size = { $in: [size] };
-    if (minPrice || maxPrice)
-      filters.price = {
-        ...(minPrice ? { $gte: Number(minPrice) } : {}),
-        ...(maxPrice ? { $lte: Number(maxPrice) } : {}),
-      };
+    if (category) filters.category = { $in: toArray(category) };
+    if (brand) filters.brand = { $in: toArray(brand) };
+    if (size) filters.size = { $in: toArray(size) };
 
-    const sortOptions: any = {};
-    if (sort === "price_asc") sortOptions.price = 1;
-    else if (sort === "price_desc") sortOptions.price = -1;
-    else if (sort === "newest") sortOptions.createdAt = -1;
+    // Color filter — # সহ আছে, তাই কোনো change করবো না
+    if (color) {
+  const rawColors = toArray(color); // আসবে → ["2f4f4f", "000000"]
+  
+  const colorsWithHash = rawColors.map(c => {
+    const clean = c.trim().replace(/^#+/, ""); // যদি # থাকে তাহলে remove
+    return "#" + clean; // আবার # যোগ করো
+  });
 
-    const products = await productService.getProducts(filters, sortOptions);
+  console.log("Color filter applied:", colorsWithHash);
+  filters.colors = { $in: colorsWithHash };
+}
 
-    res.status(200).json({ success: true, count: products.length, data: products });
+    if (minPrice || maxPrice) {
+      filters.price = {};
+      if (minPrice) filters.price.$gte = Number(minPrice);
+      if (maxPrice) filters.price.$lte = Number(maxPrice);
+    }
+
+    if (q) {
+      const term = String(q).trim();
+      if (term) {
+        filters.$or = [
+          { name: { $regex: term, $options: "i" } },
+          { description: { $regex: term, $options: "i" } },
+          { brand: { $regex: term, $options: "i" } },
+        ];
+      }
+    }
+
+    // Sort fix
+    let sortBy: "newest" | "price_asc" | "price_desc" | "oldest" = "newest";
+    const sortParam = String(sort || "").trim().toLowerCase();
+
+    if (sortParam === "price_asc") sortBy = "price_asc";
+    else if (sortParam === "price_desc") sortBy = "price_desc";
+    else if (sortParam === "oldest") sortBy = "oldest";
+
+    console.log("Final sortBy:", sortBy);
+
+    const result = await getProductsService({
+      filters,
+      sortBy,
+      page: parseInt(page as string, 10) || 1,
+      limit: parseInt(limit as string, 10) || 20,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: result.items,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        pages: result.pages,
+        limit: result.limit,
+        hasPrev: result.page > 1,
+        hasNext: result.page < result.pages,
+      },
+    });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Get Products Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
 };
-
 // Get single product
 export const getSingleProduct = async (req: Request, res: Response) => {
   try {

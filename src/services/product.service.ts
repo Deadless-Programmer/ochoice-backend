@@ -1,14 +1,11 @@
-
 import { FilterQuery, SortOrder } from "mongoose";
 import Product, { IProduct } from "../models/product.model";
 
- const createProduct = async (data: IProduct) => {
+const createProduct = async (data: IProduct) => {
   return await Product.create(data);
 };
 
 // src/services/product.service.ts
-
-
 
 export interface GetProductsOptions {
   filters?: FilterQuery<any>;
@@ -16,7 +13,6 @@ export interface GetProductsOptions {
   page?: number;
   limit?: number;
 }
-
 
 // getProductsService.ts
 export const getProductsService = async (opts: GetProductsOptions = {}) => {
@@ -61,8 +57,66 @@ const getSingleProduct = async (id: string) => {
   return await Product.findById(id);
 };
 
+// UPDATE (PUT/PATCH)
+export const updateProductService = async (id: string, updateData: any) => {
+  // Ensure colors have #
+  if (updateData.colors) {
+    updateData.colors = updateData.colors.map((c: string) =>
+      c.startsWith("#") ? c : "#" + c.replace(/^#+/, "")
+    );
+  }
+
+  const product = await Product.findByIdAndUpdate(
+    id,
+    { $set: updateData },
+    { new: true, runValidators: true }
+  );
+
+  if (!product) throw new Error("Product not found");
+  if (product.isDeleted) throw new Error("This product has been deleted");
+
+  return product;
+};
+
+// SOFT DELETE
+export const softDeleteProductService = async (id: string) => {
+  const product = await Product.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    },
+    { new: true }
+  );
+
+  if (!product) throw new Error("Product not found");
+  return product;
+};
+
+// RESTORE DELETED PRODUCT
+export const restoreProductService = async (id: string) => {
+  const product = await Product.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        isDeleted: false,
+        deletedAt: null,
+      },
+    },
+    { new: true }
+  );
+
+  if (!product) throw new Error("Product not found");
+  return product;
+};
+
 export const productService = {
   createProduct,
   getProductsService,
   getSingleProduct,
+  updateProductService,
+  softDeleteProductService,
+  restoreProductService,
 };

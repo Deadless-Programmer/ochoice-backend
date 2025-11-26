@@ -16,6 +16,8 @@ export interface IProduct extends Document {
   size: string[];
   description: string;
   isDeleted?: boolean;
+  seller: mongoose.Types.ObjectId;
+  sellerEmail?: string;
 }
 
 const productSchema = new Schema<IProduct>(
@@ -35,9 +37,21 @@ const productSchema = new Schema<IProduct>(
     size: { type: [String], required: true },
     description: { type: String, required: true },
     isDeleted: { type: Boolean, default: false },
+    seller: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    sellerEmail: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
+
+productSchema.index({ seller: 1 });
+productSchema.index({ sellerEmail: 1 });
 
 const Product = mongoose.model<IProduct>("Product", productSchema);
 export default Product;

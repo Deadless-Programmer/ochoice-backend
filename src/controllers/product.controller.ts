@@ -1,17 +1,32 @@
 import { Request, Response } from "express";
-import { productService } from "../services/product.service";
-import { getProductsService } from "../services/product.service";
+import { productService,getProductsService, restoreProductService, softDeleteProductService, updateProductService } from "../services/product.service";
+
 // Create product
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const product = await productService.createProduct(req.body);
+   
+    const sellerId = (req as any).user?._id;           
+    const sellerEmail =(req as any).user?.email;
+
+    if (!sellerId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const productData = {
+      ...req.body,
+      seller: sellerId,
+      sellerEmail: sellerEmail,
+    };
+
+    const product = await productService.createProduct(productData);
+
     res.status(201).json({
-      message: "Product create successfully",
       success: true,
+      message: "Product created successfully",
       data: product,
     });
   } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
@@ -32,17 +47,20 @@ export const getProducts = async (req: Request, res: Response) => {
       page = "1",
       limit = "20",
     } = req.query;
-console.log("Raw req.query:", req.query);
-console.log("Raw color param:", color);
+    console.log("Raw req.query:", req.query);
+    console.log("Raw color param:", color);
     // Helper: string[] বানানোর জন্য (শুধু trim + filter)
     const toArray = (param: any): string[] => {
       if (!param) return [];
       if (Array.isArray(param)) {
-        return param.map(String).map(s => s.trim()).filter(Boolean);
+        return param
+          .map(String)
+          .map((s) => s.trim())
+          .filter(Boolean);
       }
       return String(param)
         .split(",")
-        .map(s => s.trim())
+        .map((s) => s.trim())
         .filter(Boolean);
     };
 
@@ -54,16 +72,16 @@ console.log("Raw color param:", color);
 
     // Color filter — # সহ আছে, তাই কোনো change করবো না
     if (color) {
-  const rawColors = toArray(color); // আসবে → ["2f4f4f", "000000"]
-  
-  const colorsWithHash = rawColors.map(c => {
-    const clean = c.trim().replace(/^#+/, ""); // যদি # থাকে তাহলে remove
-    return "#" + clean; // আবার # যোগ করো
-  });
+      const rawColors = toArray(color); // আসবে → ["2f4f4f", "000000"]
 
-  console.log("Color filter applied:", colorsWithHash);
-  filters.colors = { $in: colorsWithHash };
-}
+      const colorsWithHash = rawColors.map((c) => {
+        const clean = c.trim().replace(/^#+/, ""); // যদি # থাকে তাহলে remove
+        return "#" + clean; // আবার # যোগ করো
+      });
+
+      console.log("Color filter applied:", colorsWithHash);
+      filters.colors = { $in: colorsWithHash };
+    }
 
     if (minPrice || maxPrice) {
       filters.price = {};
@@ -84,7 +102,9 @@ console.log("Raw color param:", color);
 
     // Sort fix
     let sortBy: "newest" | "price_asc" | "price_desc" | "oldest" = "newest";
-    const sortParam = String(sort || "").trim().toLowerCase();
+    const sortParam = String(sort || "")
+      .trim()
+      .toLowerCase();
 
     if (sortParam === "price_asc") sortBy = "price_asc";
     else if (sortParam === "price_desc") sortBy = "price_desc";
@@ -126,5 +146,46 @@ export const getSingleProduct = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, data: product });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const updateProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await updateProductService(req.params.id, req.body);
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      data: product,
+    });
+  } catch (error: any) {
+    res.status(404).json({ success: false, message: error.message });
+  }
+};
+
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await softDeleteProductService(req.params.id);
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully (soft delete)",
+      data: product,
+    });
+  } catch (error: any) {
+    res.status(404).json({ success: false, message: error.message });
+  }
+};
+
+export const restoreProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await restoreProductService(req.params.id);
+    res.status(200).json({
+      success: true,
+      message: "Product restored successfully",
+      data: product,
+    });
+  } catch (error: any) {
+    res.status(404).json({ success: false, message: error.message });
   }
 };

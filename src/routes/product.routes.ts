@@ -1,18 +1,30 @@
 import express from "express";
-import { createProduct, deleteProduct, getProducts, getSingleProduct, restoreProduct, updateProduct } from "../controllers/product.controller";
+import {
+  createProduct,
+  deleteProduct,
+  getMyProducts,
+  getProducts,
+  getSingleProduct,
+  restoreProduct,
+  updateProduct,
+} from "../controllers/product.controller";
 import { authorizeRoles, verifyToken } from "../middleware/verifyToken";
-
 
 const router = express.Router();
 
-router.post("/", verifyToken,
-  authorizeRoles("seller"), createProduct);
+router.post("/", verifyToken, authorizeRoles("seller"), createProduct);
 router.get("/", getProducts);
+router.get(
+  "/my-products",
+  verifyToken,
+  authorizeRoles("seller"),
+  getMyProducts
+);
 router.get("/:id", getSingleProduct);
 
-router.put("/:id", updateProduct);      // full update
-router.patch("/:id", updateProduct);    // partial update
-router.delete("/:id", deleteProduct);   // soft delete
-router.patch("/:id/restore", restoreProduct); // restore
+router.put("/:id", verifyToken, authorizeRoles("seller"), updateProduct); // full update
+// router.patch("/:id", verifyToken, authorizeRoles("seller"), updateProduct); // partial update
+router.delete("/:id", verifyToken, authorizeRoles("seller"), deleteProduct); // soft delete
+router.patch("/:id/restore",verifyToken,authorizeRoles("seller"),restoreProduct); // restore
 
 export default router;

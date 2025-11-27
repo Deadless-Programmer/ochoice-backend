@@ -33,7 +33,7 @@ export const getProductsService = async (opts: GetProductsOptions = {}) => {
   }
   // newest = default
 
-  console.log("MongoDB sort object:", sortObj); // ← এটা দেখো!
+  // console.log("MongoDB sort object:", sortObj); 
 
   const [items, total] = await Promise.all([
     Product.find(opts.filters || {})
@@ -58,7 +58,7 @@ const getSingleProduct = async (id: string) => {
 };
 
 // UPDATE (PUT/PATCH)
-export const updateProductService = async (id: string, updateData: any) => {
+export const updateProductService = async (id: string, updateData: any, sellerId: string) => {
   // Ensure colors have #
   if (updateData.colors) {
     updateData.colors = updateData.colors.map((c: string) =>
@@ -66,50 +66,72 @@ export const updateProductService = async (id: string, updateData: any) => {
     );
   }
 
-  const product = await Product.findByIdAndUpdate(
-    id,
+  const product = await Product.findOneAndUpdate(
+    { _id: id, seller: sellerId, isDeleted: false },
     { $set: updateData },
     { new: true, runValidators: true }
   );
 
-  if (!product) throw new Error("Product not found");
-  if (product.isDeleted) throw new Error("This product has been deleted");
+ if (!product) {
+    throw new Error("Product not found or you don't have permission to update it");
+  }
 
   return product;
+
+ 
 };
 
 // SOFT DELETE
-export const softDeleteProductService = async (id: string) => {
-  const product = await Product.findByIdAndUpdate(
-    id,
-    {
-      $set: {
-        isDeleted: true,
-        deletedAt: new Date(),
-      },
+export const softDeleteProductService = async (id: string, sellerId: string) => {
+  const product = await Product.findOneAndUpdate(
+    { _id: id, seller: sellerId },
+    { 
+      $set: { 
+        isDeleted: true, 
+        deletedAt: new Date() 
+      } 
     },
     { new: true }
   );
 
-  if (!product) throw new Error("Product not found");
+  if (!product) {
+    throw new Error("Product not found or you don't have permission to delete it");
+  }
+
   return product;
 };
 
-// RESTORE DELETED PRODUCT
-export const restoreProductService = async (id: string) => {
-  const product = await Product.findByIdAndUpdate(
-    id,
-    {
-      $set: {
-        isDeleted: false,
-        deletedAt: null,
-      },
+export const restoreProductService = async (id: string, sellerId: string) => {
+  const product = await Product.findOneAndUpdate(
+    { _id: id, seller: sellerId },
+    { 
+      $set: { 
+        isDeleted: false, 
+        deletedAt: null 
+      } 
     },
     { new: true }
   );
 
-  if (!product) throw new Error("Product not found");
+  if (!product) {
+    throw new Error("Product not found or you don't have permission to restore it");
+  }
+
   return product;
+};
+
+
+
+export const getMyProductsService = async (sellerId: string) => {
+  const products = await Product.find({
+    seller: sellerId,
+    isDeleted: false,
+  }).sort({ createdAt: -1 });
+
+ 
+  if (!products) throw new Error("No products found");
+
+  return products; 
 };
 
 export const productService = {
@@ -118,5 +140,5 @@ export const productService = {
   getSingleProduct,
   updateProductService,
   softDeleteProductService,
-  restoreProductService,
+  restoreProductService, getMyProductsService
 };

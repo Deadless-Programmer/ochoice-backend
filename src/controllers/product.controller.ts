@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { productService,getProductsService, restoreProductService, softDeleteProductService, updateProductService } from "../services/product.service";
+import { productService } from "../services/product.service";
 
 // Create product
 export const createProduct = async (req: Request, res: Response) => {
@@ -47,9 +47,8 @@ export const getProducts = async (req: Request, res: Response) => {
       page = "1",
       limit = "20",
     } = req.query;
-    console.log("Raw req.query:", req.query);
-    console.log("Raw color param:", color);
-    // Helper: string[] বানানোর জন্য (শুধু trim + filter)
+   
+    
     const toArray = (param: any): string[] => {
       if (!param) return [];
       if (Array.isArray(param)) {
@@ -70,16 +69,16 @@ export const getProducts = async (req: Request, res: Response) => {
     if (brand) filters.brand = { $in: toArray(brand) };
     if (size) filters.size = { $in: toArray(size) };
 
-    // Color filter — # সহ আছে, তাই কোনো change করবো না
+   
     if (color) {
-      const rawColors = toArray(color); // আসবে → ["2f4f4f", "000000"]
+      const rawColors = toArray(color); 
 
       const colorsWithHash = rawColors.map((c) => {
-        const clean = c.trim().replace(/^#+/, ""); // যদি # থাকে তাহলে remove
-        return "#" + clean; // আবার # যোগ করো
+        const clean = c.trim().replace(/^#+/, ""); 
+        return "#" + clean; 
       });
 
-      console.log("Color filter applied:", colorsWithHash);
+      // console.log("Color filter applied:", colorsWithHash);
       filters.colors = { $in: colorsWithHash };
     }
 
@@ -112,11 +111,12 @@ export const getProducts = async (req: Request, res: Response) => {
 
     console.log("Final sortBy:", sortBy);
 
-    const result = await getProductsService({
+    const result = await productService.getProductsService({
       filters,
       sortBy,
       page: parseInt(page as string, 10) || 1,
       limit: parseInt(limit as string, 10) || 20,
+     
     });
 
     return res.status(200).json({
@@ -132,7 +132,7 @@ export const getProducts = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error("Get Products Error:", error);
+    // console.error("Get Products Error:", error);
     return res.status(500).json({
       success: false,
       message: error.message || "Server error",
@@ -152,40 +152,75 @@ export const getSingleProduct = async (req: Request, res: Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
   try {
-    const product = await updateProductService(req.params.id, req.body);
+    const sellerId = (req as any).user._id; 
+    // console.log("Update request body:", req.body)
+    const product = await productService.updateProductService(req.params.id, req.body, sellerId);
+
     res.status(200).json({
       success: true,
       message: "Product updated successfully",
       data: product,
     });
   } catch (error: any) {
-    res.status(404).json({ success: false, message: error.message });
+    res.status(404).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
-
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
-    const product = await softDeleteProductService(req.params.id);
+    const sellerId = (req as any).user._id;
+    const product = await productService.softDeleteProductService(req.params.id, sellerId);
+
     res.status(200).json({
       success: true,
       message: "Product deleted successfully (soft delete)",
       data: product,
     });
   } catch (error: any) {
-    res.status(404).json({ success: false, message: error.message });
+    res.status(404).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
 export const restoreProduct = async (req: Request, res: Response) => {
   try {
-    const product = await restoreProductService(req.params.id);
+    const sellerId = (req as any).user._id;
+    const product = await productService.restoreProductService(req.params.id, sellerId);
+
     res.status(200).json({
       success: true,
       message: "Product restored successfully",
       data: product,
     });
   } catch (error: any) {
-    res.status(404).json({ success: false, message: error.message });
+    res.status(404).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
+};
+
+export const getMyProducts = async (req: Request, res: Response) => {
+  try {
+    const sellerId = (req as any).user._id;
+
+    const products = await productService.getMyProductsService(sellerId);
+
+    res.status(200).json({
+      success: true,
+      message: "Your products fetched successfully",
+      data: products,
+      total: products.length,
+    });
+  } catch (error: any) {
+    res.status(404).json({
+      success: false,
+      message: error.message || "No products found",
+    });
   }
 };

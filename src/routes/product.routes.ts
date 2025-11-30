@@ -24,7 +24,6 @@ router.get(
 router.get("/:id", getSingleProduct);
 
 router.put("/:id", verifyToken, authorizeRoles("seller"), updateProduct); // full update
-// router.patch("/:id", verifyToken, authorizeRoles("seller"), updateProduct); // partial update
 router.delete("/:id", verifyToken, authorizeRoles("seller"), deleteProduct); // soft delete
 router.patch("/:id/restore",verifyToken,authorizeRoles("seller"),restoreProduct); // restore
 router.get("/my-products/deleted", verifyToken, authorizeRoles("seller"), getDeletedProducts);

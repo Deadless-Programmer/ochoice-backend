@@ -4,8 +4,9 @@ import { productService } from "../services/product.service";
 // Create product
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const sellerId = (req as any).user?._id;
-    const sellerEmail = (req as any).user?.email;
+   
+    const sellerId = (req as any).user?._id;           
+    const sellerEmail =(req as any).user?.email;
 
     if (!sellerId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -46,7 +47,8 @@ export const getProducts = async (req: Request, res: Response) => {
       page = "1",
       limit = "20",
     } = req.query;
-
+   
+    
     const toArray = (param: any): string[] => {
       if (!param) return [];
       if (Array.isArray(param)) {
@@ -67,12 +69,13 @@ export const getProducts = async (req: Request, res: Response) => {
     if (brand) filters.brand = { $in: toArray(brand) };
     if (size) filters.size = { $in: toArray(size) };
 
+   
     if (color) {
-      const rawColors = toArray(color);
+      const rawColors = toArray(color); 
 
       const colorsWithHash = rawColors.map((c) => {
-        const clean = c.trim().replace(/^#+/, "");
-        return "#" + clean;
+        const clean = c.trim().replace(/^#+/, ""); 
+        return "#" + clean; 
       });
 
       // console.log("Color filter applied:", colorsWithHash);
@@ -113,6 +116,7 @@ export const getProducts = async (req: Request, res: Response) => {
       sortBy,
       page: parseInt(page as string, 10) || 1,
       limit: parseInt(limit as string, 10) || 20,
+     
     });
 
     return res.status(200).json({
@@ -145,15 +149,12 @@ export const getSingleProduct = async (req: Request, res: Response) => {
   }
 };
 
+
 export const updateProduct = async (req: Request, res: Response) => {
   try {
-    const sellerId = (req as any).user._id;
+    const sellerId = (req as any).user._id; 
     // console.log("Update request body:", req.body)
-    const product = await productService.updateProductService(
-      req.params.id,
-      req.body,
-      sellerId
-    );
+    const product = await productService.updateProductService(req.params.id, req.body, sellerId);
 
     res.status(200).json({
       success: true,
@@ -161,9 +162,9 @@ export const updateProduct = async (req: Request, res: Response) => {
       data: product,
     });
   } catch (error: any) {
-    res.status(404).json({
-      success: false,
-      message: error.message,
+    res.status(404).json({ 
+      success: false, 
+      message: error.message 
     });
   }
 };
@@ -171,10 +172,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
     const sellerId = (req as any).user._id;
-    const product = await productService.softDeleteProductService(
-      req.params.id,
-      sellerId
-    );
+    const product = await productService.softDeleteProductService(req.params.id, sellerId);
 
     res.status(200).json({
       success: true,
@@ -182,9 +180,9 @@ export const deleteProduct = async (req: Request, res: Response) => {
       data: product,
     });
   } catch (error: any) {
-    res.status(404).json({
-      success: false,
-      message: error.message,
+    res.status(404).json({ 
+      success: false, 
+      message: error.message 
     });
   }
 };
@@ -192,10 +190,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
 export const restoreProduct = async (req: Request, res: Response) => {
   try {
     const sellerId = (req as any).user._id;
-    const product = await productService.restoreProductService(
-      req.params.id,
-      sellerId
-    );
+    const product = await productService.restoreProductService(req.params.id, sellerId);
 
     res.status(200).json({
       success: true,
@@ -203,9 +198,9 @@ export const restoreProduct = async (req: Request, res: Response) => {
       data: product,
     });
   } catch (error: any) {
-    res.status(404).json({
-      success: false,
-      message: error.message,
+    res.status(404).json({ 
+      success: false, 
+      message: error.message 
     });
   }
 };
@@ -231,12 +226,14 @@ export const getMyProducts = async (req: Request, res: Response) => {
 };
 
 export const getDeletedProducts = async (req: Request, res: Response) => {
-  try {
-    const sellerId = (req as any).user._id;
-    const products = await productService.getDeletedProductsService(sellerId);
 
-    res.json({ success: true, data: products });
-  } catch (error: any) {
+  try{
+  const sellerId = (req as any).user._id;
+  const products = await productService.getDeletedProductsService(sellerId)
+
+
+  res.json({ success: true, data: products });}
+  catch (error: any) {
     res.status(404).json({
       success: false,
       message: error.message || "No products found",

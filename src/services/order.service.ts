@@ -1,39 +1,36 @@
-// // src/services/order.service.ts
+import Order, { IOrder } from "../models/order.model";
 
-// import { Order } from '../models/order.model';
-// import { getCartItems, clearCart } from './cart.service';
+class OrderService {
+  // CREATE ORDER (Customer Only)
+  async createOrder(data: Partial<IOrder>) {
+    const order = await Order.create(data);
+    return order;
+  }
 
-// export const createOrder = async (userId: string, sellerId: string) => {
-//   const cartItems = await getCartItems(userId);
-//   if (cartItems.length === 0) throw new Error('Cart is empty');
+  // GET USER ORDERS (Customer Dashboard)
+  async getUserOrders(userId: string) {
+    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
+    return orders;
+  }
 
-//   const items = cartItems.map(item => ({
-//     productId: item.productId,
-//     name: item.name,
-//     price: item.price,
-//     quantity: item.quantity,
-//     imageUrl: item.imageUrl,
-//     altText: item.altText,
-//   }));
+  // GET SELLER ORDERS (Seller Dashboard)
+  async getSellerOrders(sellerId: string) {
+    // sellerId diye je orders ache, items er moddhe filter
+    const orders = await Order.find({ "items.sellerId": sellerId }).sort({
+      createdAt: -1,
+    });
+    return orders;
+  }
 
-//   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  // UPDATE ORDER STATUS (Seller Only)
+  async updateStatus(orderId: string, status: string) {
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    );
+    return updatedOrder;
+  }
+}
 
-//   const newOrder = new Order({ userId, sellerId, items, total });
-//   await newOrder.save();
-
-//   // Clear cart after order
-//   await clearCart(userId);
-
-//   return newOrder;
-// };
-
-// export const getSellerOrders = async (sellerId: string) => {
-//   return Order.find({ sellerId });
-// };
-
-// export const updateOrderStatus = async (orderId: string, status: 'shipped' | 'delivered' | 'done') => {
-//   const order = await Order.findById(orderId);
-//   if (!order) throw new Error('Order not found');
-//   order.status = status;
-//   return order.save();
-// };
+export default new OrderService();

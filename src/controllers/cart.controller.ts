@@ -9,7 +9,8 @@ export const cartController = {
 
       const response = await cartService.addToCart({
         userId: data.userId,          
-        productId: data.productId,    
+        productId: data.productId,  
+        sellerId:data.sellerId,  
         name: data.name,
         price: data.price,
         quantity: data.quantity || 1,

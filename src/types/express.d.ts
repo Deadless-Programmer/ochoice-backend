@@ -1,6 +1,6 @@
 // types/express.d.ts
 import "express";
-import { IUser } from "src/models/user.model";
+import { IUser } from "src/models/user.model.js";
 
 
 

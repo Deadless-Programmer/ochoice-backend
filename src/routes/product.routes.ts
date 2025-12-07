@@ -8,19 +8,14 @@ import {
   getSingleProduct,
   restoreProduct,
   updateProduct,
-} from "../controllers/product.controller";
-import { authorizeRoles, verifyToken } from "../middleware/verifyToken";
+} from "../controllers/product.controller.js";
+import { authorizeRoles, verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
 router.post("/", verifyToken, authorizeRoles("seller"), createProduct);
 router.get("/", getProducts);
-router.get(
-  "/my-products",
-  verifyToken,
-  authorizeRoles("seller"),
-  getMyProducts
-);
+router.get("/my-products",verifyToken,authorizeRoles("seller"),getMyProducts);
 router.get("/:id", getSingleProduct);
 
 router.put("/:id", verifyToken, authorizeRoles("seller"), updateProduct); // full update

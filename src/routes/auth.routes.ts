@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
-import { register , login, refreshToken, logout, createUser, changePassword, resetPassword, forgotPassword, resetPasswordViaToken, updateProfile, me} from '../controllers/auth.controller';
-import { authorizeRoles, verifyToken } from '../middleware/verifyToken';
+import { register , login, refreshToken, logout, createUser, changePassword, resetPassword, forgotPassword, resetPasswordViaToken, updateProfile, me} from '../controllers/auth.controller.js';
+import { authorizeRoles, verifyToken } from '../middleware/verifyToken.js';
 
 
 

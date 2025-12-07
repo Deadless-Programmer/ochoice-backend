@@ -1,12 +1,11 @@
 {
   "name": "ochoice-backend",
   "version": "1.0.0",
-  "main": "dist/server.js",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "nodemon --watch src --ext ts --exec \"ts-node src/server.ts\""
+    "dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm src/server.ts\""
   },
   "dependencies": {
     "@types/cookie-parser": "^1.4.10",
@@ -17,7 +16,8 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.8.3",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^7.0.10",
+    "serverless-http": "^4.0.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -25,7 +25,8 @@
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/nodemailer": "^7.0.3",
-    "nodemon": "^3.1.10",
+    "@types/serverless": "^3.12.27",
+    "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   }

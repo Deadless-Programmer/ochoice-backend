@@ -1,42 +1,46 @@
-import express, {  Request, Response  } from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import connectDB from './config/db';
-import authRoutes from './routes/auth.routes';
-import adminRoutes from './routes/admin.routes';
-import productRoutes from './routes/product.routes';
-
-
-import cartRoutes from './routes/cart.routes'
-import orderRoutes from './routes/order.routes';
+import express, { Request, Response } from "express";
+import cors from "cors";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
 
-
+import authRoutes from "./routes/auth.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
+import productRoutes from "./routes/product.routes.js";
+import cartRoutes from "./routes/cart.routes.js";
+import orderRoutes from "./routes/order.routes.js";
 
 dotenv.config();
 
 const app = express();
-app.use(cors({
-  origin: "http://localhost:3000", // frontend URL
-  credentials: true, // important for cookies
-}));
-app.use(express.json());
+
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    credentials: true,
+  })
+);
+
+// Increase payload size & avoid BadRequestError
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 
-// Database connect
-connectDB();
-
-console.log('✅ App started and middleware registered...');
-
-app.use('/api/auth', authRoutes);
+// Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/orders", orderRoutes)
+app.use("/api/orders", orderRoutes);
 
+app.get("/", (req, res) => {
+  res.json({ message: "Server is running!" });
+});
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('✅ oChoice API is running...');
+// Health check
+app.get("/api/health", (_req: Request, res: Response) => {
+  res.json({ status: "ok", time: new Date().toISOString() });
 });
 
 export default app;

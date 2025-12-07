@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User from "../models/user.model";
+import User from "../models/user.model.js";
 
 // ✅ Common Role Checker Function
 const canManage = (requesterRole: string, targetRole: string): boolean => {

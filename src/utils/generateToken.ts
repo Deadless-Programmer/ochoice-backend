@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { IUser } from '../models/user.model';
+import { IUser } from '../models/user.model.js';
 
 export const generateTokens = (user: IUser) => {
   // Access Token (short lived)

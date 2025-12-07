@@ -8,8 +8,8 @@ import {
   getSingleProduct,
   restoreProduct,
   updateProduct,
-} from "../controllers/product.controller.js";
-import { authorizeRoles, verifyToken } from "../middleware/verifyToken.js";
+} from "../controllers/product.controller";
+import { authorizeRoles, verifyToken } from "../middleware/verifyToken";
 
 const router = express.Router();
 

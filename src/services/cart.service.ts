@@ -1,4 +1,4 @@
-import { Cart } from "../models/cart.model.js";
+import { Cart } from "../models/cart.model";
 
 export const cartService = {
   // add to cart

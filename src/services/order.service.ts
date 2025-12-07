@@ -1,4 +1,4 @@
-import Order, { IOrder } from "../models/order.model.js";
+import Order, { IOrder } from "../models/order.model";
 
 class OrderService {
   // CREATE ORDER (Customer Only)

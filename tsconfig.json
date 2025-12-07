@@ -2,13 +2,23 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "moduleResolution": "node",
     "rootDir": "src",
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "types": ["node"],
+
+    
+    "baseUrl": ".",
+    "paths": {
+      "*": ["types/*"]
+    }
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*",
+    "types/**/*",
+    "types/express.d.ts"   
+  ]
 }

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import orderService from "../services/order.service.js";
+import orderService from "../services/order.service";
 
 class OrderController {
   // CREATE ORDER (Customer Only)

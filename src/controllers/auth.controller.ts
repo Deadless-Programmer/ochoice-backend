@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import User, { IUser } from "../models/user.model.js";
-import { generateTokens } from "../utils/generateToken.js";
+import User, { IUser } from "../models/user.model";
+import { generateTokens } from "../utils/generateToken";
 import bcrypt from "bcryptjs";
 import { SignOptions } from "jsonwebtoken";
 
-import { sendEmail } from "../utils/sendEmail.js";
+import { sendEmail } from "../utils/sendEmail";
 
 // Register (public)
 export const register = async (req: Request, res: Response) => {

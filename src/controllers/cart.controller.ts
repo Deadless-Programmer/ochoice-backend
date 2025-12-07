@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { cartService } from "../services/cart.service.js";
+import { cartService } from "../services/cart.service";
 
 export const cartController = {
   // Add to cart

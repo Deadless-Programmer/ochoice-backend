@@ -1,11 +1,10 @@
 {
   "name": "ochoice-backend",
   "version": "1.0.0",
- 
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm src/server.ts\""
+    "dev": "nodemon --watch src --ext ts --exec \"ts-node src/server.ts\""
   },
   "dependencies": {
     "@types/cookie-parser": "^1.4.10",
@@ -26,7 +25,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/nodemailer": "^7.0.3",
     "@types/serverless": "^3.12.27",
-    "nodemon": "^3.1.11",
+    "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   }

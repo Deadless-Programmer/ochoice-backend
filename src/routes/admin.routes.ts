@@ -1,13 +1,13 @@
 import express from "express";
-import { verifyToken, authorizeRoles } from "../middleware/verifyToken.js";
+import { verifyToken, authorizeRoles } from "../middleware/verifyToken";
 import {
   getAllUsers,
   deleteUserByAdmin,
   restoreUserByAdmin,
   updateUserByAdmin,
 //   getUserById,
-} from "../controllers/admin.controller.js";
-import User from "../models/user.model.js";
+} from "../controllers/admin.controller";
+import User from "../models/user.model";
 
 const router = express.Router();
 

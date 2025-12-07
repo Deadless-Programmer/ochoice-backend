@@ -1,5 +1,5 @@
 import { FilterQuery, SortOrder } from "mongoose";
-import Product, { IProduct } from "../models/product.model.js";
+import Product, { IProduct } from "../models/product.model";
 
 const createProduct = async (data: IProduct) => {
   return await Product.create(data);

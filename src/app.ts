@@ -1,10 +1,9 @@
-// src/app.ts
 import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
-// Routes
+// Routes imports...
 import authRoutes from "./routes/auth.routes";
 import adminRoutes from "./routes/admin.routes";
 import productRoutes from "./routes/product.routes";
@@ -15,12 +14,24 @@ dotenv.config();
 
 const app = express();
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://ochoice-client-web.vercel.app",
+  process.env.FRONTEND_URL 
+];
 
 app.use(
   cors({
-    origin: FRONTEND_URL,
-    credentials: true,
+    origin: (origin, callback) => {
+     
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, 
   })
 );
 
@@ -35,12 +46,10 @@ app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 
-
 app.get("/", (req, res) => {
   res.json({ message: "Server is running!" });
 });
 
-// Basic health check
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
